@@ -24,8 +24,11 @@ def set_speed(pin, chan, speed, speed_0):
     cycle_dur = PWM.get_channel_subcycle_time_us(chan)
     num_pulses = int(cycle_dur * speed / pulse_inc)
 
+    if speed >= 0.99:
+        num_pulses -= 1
+
     PWM.add_channel_pulse(chan, pin, 0, num_pulses)
-    
+
 
 PWM.set_loglevel(PWM.LOG_LEVEL_ERRORS)
 
@@ -53,7 +56,7 @@ while True:
     break
 
 print 'Wiimote connected'
-wm.led = 1
+wm.led = 1 + 8
 wm.rpt_mode = cwiid.RPT_BTN
 
 speed = 0.6
@@ -71,7 +74,7 @@ while True:
     if wm.state['buttons'] & cwiid.BTN_DOWN:
         turn = 'r'
     if wm.state['buttons'] & cwiid.BTN_1:
-        turn = 'b'
+        move = 'b'
     if wm.state['buttons'] & cwiid.BTN_2:
         move = 'f'
     if wm.state['buttons'] & cwiid.BTN_PLUS:
@@ -84,8 +87,18 @@ while True:
             speed = 0
         elif speed > 1:
             speed = 1
+        if speed < 0.25:
+            wm.led = 1
+        elif speed < 0.5:
+            wm.led = 1 + 2
+        elif speed < 0.75:
+            wm.led = 1 + 2 + 4
+        else:
+            wm.led = 1 + 2 + 4 + 8
 
-    if (move != move_0):
+
+    if (move != move_0) or (speed != speed_0):
+        print 'speed: ' + str(speed) + ' move: ' + str(move)
         if move == 'f':
             set_speed(PIN_B, CHAN_B, 0, 1)
             set_speed(PIN_F, CHAN_F, speed, speed_0)
@@ -93,10 +106,10 @@ while True:
             set_speed(PIN_F, CHAN_F, 0, 1)
             set_speed(PIN_B, CHAN_B, speed, speed_0)
         elif move == '0':
-            set_speed(PIN_B, CHAN_F, 0, 1)
             set_speed(PIN_F, CHAN_F, 0, 1)
+            set_speed(PIN_B, CHAN_B, 0, 1)
 
-    if (turn != turn_0):
+    if turn != turn_0:
         if turn == 'l':
             RPIO.output(PIN_L, True)
             RPIO.output(PIN_R, False)
@@ -106,7 +119,7 @@ while True:
         elif turn == '0':
             RPIO.output(PIN_L, False)
             RPIO.output(PIN_R, False)
-        
+
     move_0 = move
     turn_0 = turn
     speed_0 = speed
