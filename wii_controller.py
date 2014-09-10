@@ -100,10 +100,10 @@ while True:
         if turn == 'l':
             RPIO.output(PIN_L, True)
             RPIO.output(PIN_R, False)
-        elif turn = 'r':
+        elif turn == 'r':
             RPIO.output(PIN_L, False)
             RPIO.output(PIN_R, True)
-        elif turn = '0':
+        elif turn == '0':
             RPIO.output(PIN_L, False)
             RPIO.output(PIN_R, False)
         
